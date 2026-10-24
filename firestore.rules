@@ -1,0 +1,72 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The shop owner is anyone who has a document in the "admins" collection
+    // whose ID is their Firebase user ID (you create it once, by hand).
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Shoppers can only see products you switched to "visible".
+    match /products/{id} {
+      allow read: if isAdmin() || resource.data.visible == true;
+      allow write: if isAdmin();
+    }
+
+    // Cost prices live apart from products so shoppers can never read them.
+    match /productCosts/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /sales/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /expenses/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // Anyone can place an order and look one up by its long tracking code,
+    // but only you can list, change or delete orders.
+    match /orders/{orderId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if orderId.size() == 12
+        && request.resource.data.keys().hasOnly([
+          'customerName', 'phone', 'email', 'address', 'city', 'note',
+          'paymentMethod', 'paid', 'items', 'subtotal', 'deliveryFee', 'total',
+          'status', 'history', 'adminNote', 'createdAt'
+        ])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.paid == false
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 20
+        && request.resource.data.customerName is string
+        && request.resource.data.customerName.size() > 1
+        && request.resource.data.customerName.size() < 100
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 7
+        && request.resource.data.phone.size() < 25
+        && request.resource.data.address is string
+        && request.resource.data.address.size() < 400
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0;
+      allow update, delete: if isAdmin();
+    }
+
+    // Store name, WhatsApp number and bank details are shown to shoppers.
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
