@@ -2,15 +2,21 @@
 
 @theme {
   --color-ink: #0a0a0a;
-  --color-ink-soft: #2b2b2b;
-  --color-fog: #f4f4f4;
-  --color-line: #e0e0e0;
+  --color-ink-soft: #262626;
+  --color-fog: #f5f4f2;
+  --color-line: #e5e3df;
+  --color-gold: #c8963e;
+  --color-gold-soft: #f7edd8;
+  --color-sale: #d62839;
+  --color-go: #15803d;
   --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
+html { scroll-behavior: smooth; }
+
 body {
-  background: var(--color-fog);
+  background: #fff;
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
@@ -21,6 +27,25 @@ body {
   box-shadow: 0 0 0 4px #fff;
 }
 
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-ink transition hover:bg-gold-soft;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-white;
+  }
+  .field {
+    @apply mt-1 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm transition focus:border-ink;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-white;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   * { transition: none !important; animation: none !important; }
 }
